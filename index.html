@@ -102,6 +102,79 @@
   .crop-control span{float:right;color:#e7e8eb}
   @media (min-width:520px){.design-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.edit-tools{grid-template-columns:repeat(4,minmax(0,1fr))}}
 
+  .mobile-tabs,.mobile-action-bar,.nail-summary{display:none}
+
+  @media (max-width:700px){
+    body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+    .app{max-width:none}
+    header{padding:9px 12px 8px}
+    h1{font-size:18px}
+    .badge{font-size:10px}
+    .status{font-size:11px;max-width:42%;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+    .workspace-wrap{padding:8px 10px 6px}
+    .workspace{height:44svh;min-height:300px;max-height:470px;border-radius:15px}
+    .nail-summary{
+      display:block;position:absolute;z-index:3;left:50%;top:9px;transform:translateX(-50%);
+      padding:7px 10px;border-radius:999px;background:rgba(15,17,21,.78);color:#fff;
+      border:1px solid rgba(255,255,255,.18);font-size:11px;pointer-events:none;white-space:nowrap;
+      backdrop-filter:blur(8px)
+    }
+
+    .mobile-tabs{
+      display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:6px 10px 8px;
+      position:sticky;top:50px;z-index:7;background:rgba(15,17,21,.96);backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--border)
+    }
+    .mobile-tab{padding:9px 4px;min-height:40px;font-size:12px;border-radius:10px}
+    .mobile-tab.active{background:var(--accent);border-color:var(--accent);color:#1a0b12}
+
+    .controls{padding:8px 10px 18px;gap:9px}
+    .controls .mobile-panel{display:none}
+    .controls .mobile-panel.mobile-active{display:block}
+    .card{padding:12px;border-radius:14px}
+    .card h2{font-size:14px;margin-bottom:9px}
+    button{min-height:44px;padding:10px 9px}
+    .hint{font-size:11px}
+
+    .nail-card .row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+    .nail-card .row > div{min-width:0}
+    .nail-card .row > div:nth-child(3){grid-column:1 / -1}
+    .seg{gap:6px}
+    .seg button{font-size:12px;padding:9px 5px}
+    .edit-tools{grid-template-columns:repeat(2,1fr);gap:7px}
+    .edit-tools button{font-size:12px}
+
+    .library-panel.open{
+      display:block;position:fixed;z-index:30;inset:0;background:var(--bg);
+      padding:calc(12px + env(safe-area-inset-top)) 12px calc(24px + env(safe-area-inset-bottom));
+      overflow-y:auto;margin:0;border:0
+    }
+    .library-title{position:sticky;top:0;z-index:2;background:var(--bg);padding:6px 0 10px;margin:0}
+    .design-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;padding-bottom:20px}
+    .design-card{padding:5px}
+    .design-card span{font-size:10px}
+
+    .crop-panel.open{
+      display:block;position:fixed;z-index:35;inset:0;background:var(--bg);
+      margin:0;padding:calc(14px + env(safe-area-inset-top)) 12px calc(24px + env(safe-area-inset-bottom));
+      border:0;border-radius:0;overflow-y:auto
+    }
+    .crop-preview{height:34svh;max-height:330px}
+    .crop-grid{gap:12px 10px}
+
+    .mobile-action-bar{
+      display:grid;grid-template-columns:.8fr 1.6fr;gap:8px;position:fixed;z-index:20;
+      left:0;right:0;bottom:0;padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+      background:rgba(15,17,21,.94);backdrop-filter:blur(12px);border-top:1px solid var(--border)
+    }
+    .mobile-action-bar button{min-height:46px}
+  }
+
+  @media (min-width:701px){
+    .controls .mobile-panel{display:block!important}
+  }
+
 </style>
 </head>
 <body>
@@ -109,22 +182,30 @@
   <header>
     <div>
       <h1>Nail Trace</h1>
-      <div class="badge">prototype v0.3</div>
+      <div class="badge">prototype v0.4</div>
     </div>
     <div id="status" class="status">Choose a design</div>
   </header>
 
   <div class="workspace-wrap">
     <div id="workspace" class="workspace">
+      <div id="nailSummary" class="nail-summary">12 × 18 mm · Oval</div>
       <canvas id="imageCanvas"></canvas>
       <canvas id="nailCanvas"></canvas>
       <div class="lock-overlay"><div class="lock-pill">🔒 Trace locked</div></div>
     </div>
   </div>
 
+  <nav class="mobile-tabs" aria-label="Editor sections">
+    <button class="mobile-tab active" data-mobile-target="design">Design</button>
+    <button class="mobile-tab" data-mobile-target="nail">Nail</button>
+    <button class="mobile-tab" data-mobile-target="view">View</button>
+    <button class="mobile-tab" data-mobile-target="edit">Edit</button>
+  </nav>
+
   <div class="controls">
 
-    <section class="card">
+    <section class="card mobile-panel mobile-active" data-mobile-panel="design">
       <h2>1. Choose a design</h2>
       <input id="fileInput" type="file" accept="image/*" />
       <div class="source-actions">
@@ -146,7 +227,7 @@
       <div class="hint">Choose one of the built-in designs or upload your own image. Drag with one finger. Pinch with two fingers to resize and rotate.</div>
     </section>
 
-    <section class="card">
+    <section class="card mobile-panel nail-card" data-mobile-panel="nail">
       <h2>2. Nail size</h2>
       <div class="row">
         <div>
@@ -169,7 +250,7 @@
       <div class="hint">The nail guide uses your calibration below so the on-screen outline is approximately life-sized.</div>
     </section>
 
-    <section class="card">
+    <section class="card mobile-panel" data-mobile-panel="nail">
       <h2>3. Screen calibration</h2>
       <div id="calibrationBox" class="calibration-box">85.60 mm reference</div>
       <label for="calibrationRange">Resize this box until its width matches the long edge of a standard credit/debit card held against your screen.</label>
@@ -181,7 +262,7 @@
       <div id="calibrationText" class="tiny"></div>
     </section>
 
-    <section class="card">
+    <section class="card mobile-panel" data-mobile-panel="view">
       <h2>4. Trace view</h2>
       <div class="seg">
         <button id="originalBtn" class="active">Original</button>
@@ -204,7 +285,7 @@
       </div>
     </section>
 
-    <section class="card">
+    <section class="card mobile-panel" data-mobile-panel="edit">
       <h2>5. Position & trace</h2>
 
       <div class="edit-tools">
@@ -253,6 +334,11 @@
       <div class="hint">Drag, pinch, rotate, mirror, flip, or crop before locking. When locked, touching the tracing area will not move the artwork.</div>
     </section>
 
+  </div>
+
+  <div class="mobile-action-bar">
+    <button id="mobileFitBtn">Fit to nail</button>
+    <button id="mobileLockBtn" class="primary">🔒 Lock to trace</button>
   </div>
 </div>
 
@@ -317,6 +403,26 @@
   const centerBtn = document.getElementById('centerBtn');
   const resetTransformBtn = document.getElementById('resetTransformBtn');
   const lockBtn = document.getElementById('lockBtn');
+  const mobileFitBtn = document.getElementById('mobileFitBtn');
+  const mobileLockBtn = document.getElementById('mobileLockBtn');
+  const nailSummary = document.getElementById('nailSummary');
+  const mobileTabs = Array.from(document.querySelectorAll('.mobile-tab'));
+  const mobilePanels = Array.from(document.querySelectorAll('.mobile-panel'));
+
+  function setMobilePanel(target) {
+    mobileTabs.forEach(tab => tab.classList.toggle('active', tab.dataset.mobileTarget === target));
+    mobilePanels.forEach(panel => panel.classList.toggle('mobile-active', panel.dataset.mobilePanel === target));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  mobileTabs.forEach(tab => {
+    tab.addEventListener('click', () => setMobilePanel(tab.dataset.mobileTarget));
+  });
+
+  function updateNailSummary() {
+    const shapeText = nailShape.options[nailShape.selectedIndex]?.text || 'Nail';
+    nailSummary.textContent = `${nailWidth.value} × ${nailLength.value} mm · ${shapeText}`;
+  }
 
   const state = {
     img: null,
@@ -803,7 +909,7 @@
     status.textContent='Image position reset';
   });
 
-  [nailWidth,nailLength,nailShape].forEach(el => el.addEventListener('input', render));
+  [nailWidth,nailLength,nailShape].forEach(el => el.addEventListener('input', () => { updateNailSummary(); render(); }));
 
   function setMode(mode) {
     state.mode = mode;
@@ -1084,18 +1190,25 @@
   imageCanvas.addEventListener('pointerup',endPointer);
   imageCanvas.addEventListener('pointercancel',endPointer);
 
-  lockBtn.addEventListener('click',()=>{
+  function toggleTraceLock() {
     state.locked=!state.locked;
     workspace.classList.toggle('locked',state.locked);
     lockBtn.textContent=state.locked?'🔓 Unlock':'🔒 Lock to trace';
+    mobileLockBtn.textContent=state.locked?'🔓 Unlock':'🔒 Lock to trace';
     lockBtn.classList.toggle('danger',state.locked);
+    mobileLockBtn.classList.toggle('danger',state.locked);
     status.textContent=state.locked?'Locked for tracing':'Unlocked';
     state.pointers.clear();state.gestureStart=null;
-  });
+  }
+
+  lockBtn.addEventListener('click', toggleTraceLock);
+  mobileLockBtn.addEventListener('click', toggleTraceLock);
+  mobileFitBtn.addEventListener('click', () => fitBtn.click());
 
   window.addEventListener('resize',resizeCanvases);
   updateEditButtonStates();
   updateCropPreview();
+  updateNailSummary();
   resizeCanvases();
 })();
 </script>
