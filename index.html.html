@@ -1,0 +1,707 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>Nail Trace</title>
+<style>
+  :root{
+    --bg:#0f1115;
+    --panel:#171a21;
+    --text:#f7f7f8;
+    --muted:#a8adb8;
+    --accent:#ff5ca8;
+    --border:#2a2f3a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overscroll-behavior:none}
+  body{padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+  button,input,select{font:inherit}
+  .app{max-width:720px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
+  header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;border-bottom:1px solid var(--border);background:#11141a;position:sticky;top:0;z-index:4}
+  h1{font-size:20px;margin:0}
+  .badge{font-size:12px;color:var(--muted)}
+  .workspace-wrap{padding:12px}
+  .workspace{
+    position:relative;
+    width:100%;
+    height:54vh;
+    min-height:360px;
+    max-height:620px;
+    border:1px solid var(--border);
+    border-radius:18px;
+    overflow:hidden;
+    background:white;
+    touch-action:none;
+  }
+  canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  #nailCanvas{pointer-events:none}
+  .lock-overlay{
+    position:absolute;inset:0;display:none;align-items:flex-end;justify-content:center;
+    pointer-events:none;padding:16px;background:transparent
+  }
+  .locked .lock-overlay{display:flex}
+  .locked #imageCanvas{pointer-events:none}
+  .lock-pill{background:rgba(15,17,21,.82);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.2);padding:10px 14px;border-radius:999px;font-size:13px}
+  .controls{padding:0 12px 24px;display:grid;gap:12px}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:14px}
+  .card h2{font-size:15px;margin:0 0 10px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .row > *{flex:1}
+  label{font-size:12px;color:var(--muted);display:block;margin-bottom:5px}
+  input[type="number"],select,input[type="range"]{width:100%}
+  input[type="number"],select{
+    background:#0f1218;border:1px solid var(--border);border-radius:10px;color:var(--text);
+    padding:10px 11px
+  }
+  input[type="file"]{width:100%;color:var(--muted)}
+  button{
+    border:1px solid var(--border);border-radius:12px;background:#222733;color:white;padding:11px 12px;font-weight:600
+  }
+  button.primary{background:var(--accent);border-color:var(--accent);color:#1a0b12}
+  button.active{outline:2px solid var(--accent)}
+  button:disabled{opacity:.45}
+  .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .hint{color:var(--muted);font-size:12px;line-height:1.4;margin-top:8px}
+  .palette{display:flex;gap:9px;flex-wrap:wrap;margin-top:10px}
+  .swatch{
+    width:38px;height:38px;border-radius:50%;border:3px solid transparent;padding:0;flex:0 0 auto;
+    box-shadow:0 0 0 1px rgba(255,255,255,.18) inset
+  }
+  .swatch.on{border-color:white;outline:2px solid var(--accent)}
+  .calibration-box{
+    height:54px;border:2px dashed rgba(255,255,255,.5);border-radius:10px;
+    display:flex;align-items:center;justify-content:center;color:var(--muted);margin:8px 0 10px
+  }
+  .tiny{font-size:11px;color:var(--muted)}
+  .status{font-size:12px;color:#d7d9de}
+  .danger{background:#4a2026}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <h1>Nail Trace</h1>
+      <div class="badge">prototype v0.1</div>
+    </div>
+    <div id="status" class="status">Choose a photo</div>
+  </header>
+
+  <div class="workspace-wrap">
+    <div id="workspace" class="workspace">
+      <canvas id="imageCanvas"></canvas>
+      <canvas id="nailCanvas"></canvas>
+      <div class="lock-overlay"><div class="lock-pill">🔒 Trace locked</div></div>
+    </div>
+  </div>
+
+  <div class="controls">
+
+    <section class="card">
+      <h2>1. Photo</h2>
+      <input id="fileInput" type="file" accept="image/*" />
+      <div class="hint">Choose a nail-art reference from Photos. Drag with one finger. Pinch with two fingers to resize and rotate.</div>
+    </section>
+
+    <section class="card">
+      <h2>2. Nail size</h2>
+      <div class="row">
+        <div>
+          <label for="nailWidth">Width (mm)</label>
+          <input id="nailWidth" type="number" min="4" max="30" step="0.5" value="12" />
+        </div>
+        <div>
+          <label for="nailLength">Length (mm)</label>
+          <input id="nailLength" type="number" min="6" max="40" step="0.5" value="18" />
+        </div>
+        <div>
+          <label for="nailShape">Shape</label>
+          <select id="nailShape">
+            <option value="oval">Oval / almond</option>
+            <option value="square">Square</option>
+            <option value="coffin">Coffin</option>
+          </select>
+        </div>
+      </div>
+      <div class="hint">The nail guide uses your calibration below so the on-screen outline is approximately life-sized.</div>
+    </section>
+
+    <section class="card">
+      <h2>3. Screen calibration</h2>
+      <div id="calibrationBox" class="calibration-box">85.60 mm reference</div>
+      <label for="calibrationRange">Resize this box until its width matches the long edge of a standard credit/debit card held against your screen.</label>
+      <input id="calibrationRange" type="range" min="180" max="520" value="324" />
+      <div class="row" style="margin-top:10px">
+        <button id="saveCalibration">Save calibration</button>
+        <button id="resetCalibration">Reset</button>
+      </div>
+      <div id="calibrationText" class="tiny"></div>
+    </section>
+
+    <section class="card">
+      <h2>4. Trace view</h2>
+      <div class="seg">
+        <button id="originalBtn" class="active">Original</button>
+        <button id="outlineBtn">Outline</button>
+        <button id="colorsBtn">Outline + colors</button>
+      </div>
+
+      <div style="margin-top:12px">
+        <label for="edgeThreshold">Outline strength</label>
+        <input id="edgeThreshold" type="range" min="20" max="180" value="75" />
+      </div>
+
+      <div id="paletteWrap" style="display:none">
+        <div class="hint">Tap colors to show or hide them. Black outlines always remain visible.</div>
+        <div id="palette" class="palette"></div>
+        <div class="row" style="margin-top:10px">
+          <button id="allColorsBtn">All colors</button>
+          <button id="noColorsBtn">No colors</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>5. Position & trace</h2>
+      <div class="row">
+        <button id="fitBtn">Fit to nail</button>
+        <button id="centerBtn">Center</button>
+        <button id="resetTransformBtn">Reset image</button>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button id="lockBtn" class="primary">🔒 Lock to trace</button>
+      </div>
+      <div class="hint">When locked, touches on the image area no longer move, zoom, or rotate the artwork. Tap the lock button again to unlock.</div>
+    </section>
+
+  </div>
+</div>
+
+<script>
+(() => {
+  const workspace = document.getElementById('workspace');
+  const imageCanvas = document.getElementById('imageCanvas');
+  const nailCanvas = document.getElementById('nailCanvas');
+  const ictx = imageCanvas.getContext('2d', { willReadFrequently: true });
+  const nctx = nailCanvas.getContext('2d');
+
+  const fileInput = document.getElementById('fileInput');
+  const nailWidth = document.getElementById('nailWidth');
+  const nailLength = document.getElementById('nailLength');
+  const nailShape = document.getElementById('nailShape');
+  const status = document.getElementById('status');
+
+  const calibrationRange = document.getElementById('calibrationRange');
+  const calibrationBox = document.getElementById('calibrationBox');
+  const calibrationText = document.getElementById('calibrationText');
+  const saveCalibration = document.getElementById('saveCalibration');
+  const resetCalibration = document.getElementById('resetCalibration');
+
+  const originalBtn = document.getElementById('originalBtn');
+  const outlineBtn = document.getElementById('outlineBtn');
+  const colorsBtn = document.getElementById('colorsBtn');
+  const edgeThreshold = document.getElementById('edgeThreshold');
+  const paletteWrap = document.getElementById('paletteWrap');
+  const paletteEl = document.getElementById('palette');
+  const allColorsBtn = document.getElementById('allColorsBtn');
+  const noColorsBtn = document.getElementById('noColorsBtn');
+
+  const fitBtn = document.getElementById('fitBtn');
+  const centerBtn = document.getElementById('centerBtn');
+  const resetTransformBtn = document.getElementById('resetTransformBtn');
+  const lockBtn = document.getElementById('lockBtn');
+
+  const state = {
+    img: null,
+    imgBitmapCanvas: null,
+    processedCanvas: null,
+    mode: 'original',
+    x: 0,
+    y: 0,
+    scale: 1,
+    rotation: 0,
+    locked: false,
+    pointers: new Map(),
+    gestureStart: null,
+    palette: [],
+    enabledColors: new Set(),
+    pxPerMm: parseFloat(localStorage.getItem('nailtrace_pxPerMm')) || null
+  };
+
+  function resizeCanvases() {
+    const r = workspace.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+    for (const c of [imageCanvas, nailCanvas]) {
+      c.width = Math.round(r.width * dpr);
+      c.height = Math.round(r.height * dpr);
+      c.style.width = r.width + 'px';
+      c.style.height = r.height + 'px';
+    }
+    render();
+  }
+
+  function canvasDims() {
+    return { w: imageCanvas.width, h: imageCanvas.height, dpr: imageCanvas.width / workspace.clientWidth };
+  }
+
+  function updateCalibrationBox() {
+    calibrationBox.style.width = calibrationRange.value + 'px';
+    const px = parseFloat(calibrationRange.value);
+    const ppm = px / 85.60;
+    calibrationText.textContent = `Current calibration: ${ppm.toFixed(3)} CSS pixels per mm`;
+  }
+
+  calibrationRange.addEventListener('input', updateCalibrationBox);
+  saveCalibration.addEventListener('click', () => {
+    state.pxPerMm = parseFloat(calibrationRange.value) / 85.60;
+    localStorage.setItem('nailtrace_pxPerMm', state.pxPerMm);
+    status.textContent = 'Calibration saved';
+    render();
+  });
+  resetCalibration.addEventListener('click', () => {
+    localStorage.removeItem('nailtrace_pxPerMm');
+    state.pxPerMm = null;
+    calibrationRange.value = 324;
+    updateCalibrationBox();
+    status.textContent = 'Calibration reset';
+    render();
+  });
+
+  if (state.pxPerMm) {
+    calibrationRange.value = Math.min(520, Math.max(180, Math.round(state.pxPerMm * 85.60)));
+  }
+  updateCalibrationBox();
+
+  function drawNailGuide() {
+    const {w,h,dpr} = canvasDims();
+    nctx.clearRect(0,0,w,h);
+
+    const cssPxPerMm = state.pxPerMm || (324 / 85.60);
+    const nw = parseFloat(nailWidth.value || 12) * cssPxPerMm * dpr;
+    const nl = parseFloat(nailLength.value || 18) * cssPxPerMm * dpr;
+    const cx = w/2, cy = h/2;
+    const x = cx - nw/2, y = cy - nl/2;
+
+    nctx.save();
+    nctx.lineWidth = Math.max(2, 2*dpr);
+    nctx.strokeStyle = 'rgba(255, 70, 150, .95)';
+    nctx.setLineDash([7*dpr, 5*dpr]);
+
+    nctx.beginPath();
+    if (nailShape.value === 'square') {
+      const r = Math.min(nw,nl) * .12;
+      roundedRect(nctx, x, y, nw, nl, r);
+    } else if (nailShape.value === 'coffin') {
+      const taper = nw * .18;
+      nctx.moveTo(x+taper, y);
+      nctx.lineTo(x+nw-taper, y);
+      nctx.lineTo(x+nw, y+nl*.28);
+      nctx.lineTo(x+nw, y+nl*.86);
+      nctx.quadraticCurveTo(x+nw, y+nl, x+nw*.76, y+nl);
+      nctx.lineTo(x+nw*.24, y+nl);
+      nctx.quadraticCurveTo(x, y+nl, x, y+nl*.86);
+      nctx.lineTo(x, y+nl*.28);
+      nctx.closePath();
+    } else {
+      const topCurve = nl * .18;
+      const bottomCurve = nl * .14;
+      nctx.moveTo(cx, y);
+      nctx.bezierCurveTo(x+nw*.16, y, x, y+topCurve*.72, x, y+topCurve);
+      nctx.lineTo(x, y+nl-bottomCurve);
+      nctx.bezierCurveTo(x, y+nl, x+nw*.22, y+nl, cx, y+nl);
+      nctx.bezierCurveTo(x+nw*.78, y+nl, x+nw, y+nl, x+nw, y+nl-bottomCurve);
+      nctx.lineTo(x+nw, y+topCurve);
+      nctx.bezierCurveTo(x+nw, y+topCurve*.72, x+nw*.84, y, cx, y);
+      nctx.closePath();
+    }
+    nctx.stroke();
+
+    nctx.setLineDash([]);
+    nctx.fillStyle = 'rgba(15,17,21,.70)';
+    nctx.font = `${12*dpr}px -apple-system,sans-serif`;
+    nctx.textAlign = 'center';
+    nctx.fillText(`${nailWidth.value} × ${nailLength.value} mm`, cx, Math.max(18*dpr, y-8*dpr));
+    nctx.restore();
+  }
+
+  function roundedRect(ctx,x,y,w,h,r){
+    ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+    ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+    ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();
+  }
+
+  function render() {
+    const {w,h} = canvasDims();
+    ictx.clearRect(0,0,w,h);
+    ictx.fillStyle = '#fff';
+    ictx.fillRect(0,0,w,h);
+
+    if (state.img) {
+      const source = state.mode === 'original' ? state.imgBitmapCanvas : (state.processedCanvas || state.imgBitmapCanvas);
+      const sw = source.width, sh = source.height;
+      ictx.save();
+      ictx.translate(w/2 + state.x, h/2 + state.y);
+      ictx.rotate(state.rotation);
+      ictx.scale(state.scale, state.scale);
+      ictx.drawImage(source, -sw/2, -sh/2);
+      ictx.restore();
+    }
+    drawNailGuide();
+  }
+
+  function buildBaseCanvas(img) {
+    const maxDim = 1200;
+    let w = img.naturalWidth, h = img.naturalHeight;
+    const factor = Math.min(1, maxDim / Math.max(w,h));
+    w = Math.max(1, Math.round(w*factor));
+    h = Math.max(1, Math.round(h*factor));
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const cctx = c.getContext('2d');
+    cctx.drawImage(img,0,0,w,h);
+    return c;
+  }
+
+  fileInput.addEventListener('change', e => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      state.img = img;
+      state.imgBitmapCanvas = buildBaseCanvas(img);
+      state.processedCanvas = null;
+      state.x = 0; state.y = 0; state.rotation = 0;
+      fitImageToWorkspace();
+      extractPalette();
+      updateProcessed();
+      status.textContent = 'Photo loaded';
+      URL.revokeObjectURL(url);
+    };
+    img.src = url;
+  });
+
+  function fitImageToWorkspace() {
+    if (!state.imgBitmapCanvas) return;
+    const {w,h} = canvasDims();
+    const sw = state.imgBitmapCanvas.width, sh = state.imgBitmapCanvas.height;
+    state.scale = Math.min(w/sw, h/sh) * .85;
+    state.x = 0; state.y = 0; state.rotation = 0;
+    render();
+  }
+
+  fitBtn.addEventListener('click', () => {
+    if (!state.imgBitmapCanvas) return;
+    const {dpr} = canvasDims();
+    const cssPxPerMm = state.pxPerMm || (324 / 85.60);
+    const targetW = parseFloat(nailWidth.value || 12)*cssPxPerMm*dpr;
+    const targetH = parseFloat(nailLength.value || 18)*cssPxPerMm*dpr;
+    const sw = state.imgBitmapCanvas.width, sh = state.imgBitmapCanvas.height;
+    state.scale = Math.min(targetW/sw, targetH/sh);
+    state.x=0;state.y=0;state.rotation=0;
+    render();
+  });
+
+  centerBtn.addEventListener('click',()=>{state.x=0;state.y=0;render()});
+  resetTransformBtn.addEventListener('click',fitImageToWorkspace);
+
+  [nailWidth,nailLength,nailShape].forEach(el => el.addEventListener('input', render));
+
+  function setMode(mode) {
+    state.mode = mode;
+    originalBtn.classList.toggle('active', mode==='original');
+    outlineBtn.classList.toggle('active', mode==='outline');
+    colorsBtn.classList.toggle('active', mode==='colors');
+    paletteWrap.style.display = mode==='colors' ? 'block' : 'none';
+    if (mode !== 'original') updateProcessed();
+    render();
+  }
+
+  originalBtn.addEventListener('click',()=>setMode('original'));
+  outlineBtn.addEventListener('click',()=>setMode('outline'));
+  colorsBtn.addEventListener('click',()=>setMode('colors'));
+  edgeThreshold.addEventListener('input',()=>{ if(state.mode!=='original') updateProcessed(); });
+
+  function colorDistance(a,b){
+    const dr=a[0]-b[0], dg=a[1]-b[1], db=a[2]-b[2];
+    return dr*dr+dg*dg+db*db;
+  }
+
+  function extractPalette() {
+    if (!state.imgBitmapCanvas) return;
+    const src = state.imgBitmapCanvas;
+    const temp = document.createElement('canvas');
+    const size = 90;
+    const ar = src.width/src.height;
+    temp.width = ar>=1 ? size : Math.max(24,Math.round(size*ar));
+    temp.height = ar>=1 ? Math.max(24,Math.round(size/ar)) : size;
+    const t = temp.getContext('2d');
+    t.drawImage(src,0,0,temp.width,temp.height);
+    const data = t.getImageData(0,0,temp.width,temp.height).data;
+
+    const samples=[];
+    for(let i=0;i<data.length;i+=16){
+      const a=data[i+3];
+      if(a<180) continue;
+      const r=data[i],g=data[i+1],b=data[i+2];
+      const max=Math.max(r,g,b), min=Math.min(r,g,b);
+      if(max>245 && min>245) continue;
+      samples.push([r,g,b]);
+    }
+
+    let centers=[];
+    const target=7;
+    if(samples.length){
+      for(let k=0;k<target;k++){
+        centers.push(samples[Math.floor(k*samples.length/target)] || samples[0]);
+      }
+      for(let iter=0;iter<8;iter++){
+        const sums=centers.map(()=>[0,0,0,0]);
+        for(const p of samples){
+          let best=0,bestD=Infinity;
+          centers.forEach((c,idx)=>{
+            const d=colorDistance(p,c);
+            if(d<bestD){bestD=d;best=idx}
+          });
+          sums[best][0]+=p[0];sums[best][1]+=p[1];sums[best][2]+=p[2];sums[best][3]++;
+        }
+        centers=centers.map((c,i)=>{
+          const s=sums[i];
+          return s[3] ? [Math.round(s[0]/s[3]),Math.round(s[1]/s[3]),Math.round(s[2]/s[3])] : c;
+        });
+      }
+    }
+
+    const unique=[];
+    for(const c of centers){
+      if(!unique.some(u=>colorDistance(u,c)<900)) unique.push(c);
+    }
+    state.palette=unique;
+    state.enabledColors=new Set(unique.map((_,i)=>i));
+    renderPalette();
+  }
+
+  function renderPalette(){
+    paletteEl.innerHTML='';
+    state.palette.forEach((c,i)=>{
+      const b=document.createElement('button');
+      b.className='swatch '+(state.enabledColors.has(i)?'on':'');
+      b.style.background=`rgb(${c[0]},${c[1]},${c[2]})`;
+      b.setAttribute('aria-label',`Color ${i+1}`);
+      b.addEventListener('click',()=>{
+        if(state.enabledColors.has(i)) state.enabledColors.delete(i);
+        else state.enabledColors.add(i);
+        renderPalette();
+        updateProcessed();
+      });
+      paletteEl.appendChild(b);
+    });
+  }
+
+  allColorsBtn.addEventListener('click',()=>{
+    state.enabledColors=new Set(state.palette.map((_,i)=>i));
+    renderPalette();updateProcessed();
+  });
+  noColorsBtn.addEventListener('click',()=>{
+    state.enabledColors.clear();
+    renderPalette();updateProcessed();
+  });
+
+  function nearestPaletteIndex(r,g,b){
+    let best=-1,bestD=Infinity;
+    state.palette.forEach((c,i)=>{
+      const d=(r-c[0])**2+(g-c[1])**2+(b-c[2])**2;
+      if(d<bestD){bestD=d;best=i}
+    });
+    return best;
+  }
+
+  function updateProcessed(){
+    if(!state.imgBitmapCanvas) return;
+    const src=state.imgBitmapCanvas;
+    const c=document.createElement('canvas');
+    c.width=src.width;c.height=src.height;
+    const ctx=c.getContext('2d',{willReadFrequently:true});
+    ctx.drawImage(src,0,0);
+    const img=ctx.getImageData(0,0,c.width,c.height);
+    const d=img.data;
+    const w=c.width,h=c.height;
+    const gray=new Float32Array(w*h);
+
+    for(let i=0,p=0;i<d.length;i+=4,p++){
+      gray[p]=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
+    }
+
+    const edges=new Uint8Array(w*h);
+    const threshold=parseInt(edgeThreshold.value,10);
+    for(let y=1;y<h-1;y++){
+      for(let x=1;x<w-1;x++){
+        const i=y*w+x;
+        const gx =
+          -gray[i-w-1] + gray[i-w+1]
+          -2*gray[i-1] + 2*gray[i+1]
+          -gray[i+w-1] + gray[i+w+1];
+        const gy =
+          -gray[i-w-1] -2*gray[i-w] -gray[i-w+1]
+          +gray[i+w-1] +2*gray[i+w] +gray[i+w+1];
+        const mag=Math.sqrt(gx*gx+gy*gy);
+        edges[i]=mag>threshold ? 1 : 0;
+      }
+    }
+
+    const out=ctx.createImageData(w,h);
+    const od=out.data;
+    for(let y=0;y<h;y++){
+      for(let x=0;x<w;x++){
+        const p=y*w+x, i=p*4;
+        if(edges[p]){
+          od[i]=0;od[i+1]=0;od[i+2]=0;od[i+3]=255;
+        } else if(state.mode==='colors' && state.palette.length){
+          const idx=nearestPaletteIndex(d[i],d[i+1],d[i+2]);
+          if(idx>=0 && state.enabledColors.has(idx)){
+            od[i]=state.palette[idx][0];
+            od[i+1]=state.palette[idx][1];
+            od[i+2]=state.palette[idx][2];
+            od[i+3]=255;
+          } else {
+            od[i]=255;od[i+1]=255;od[i+2]=255;od[i+3]=255;
+          }
+        } else {
+          od[i]=255;od[i+1]=255;od[i+2]=255;od[i+3]=255;
+        }
+      }
+    }
+
+    // Make edges slightly bolder by darkening immediate neighbors.
+    const copy = new Uint8ClampedArray(od);
+    for(let y=1;y<h-1;y++){
+      for(let x=1;x<w-1;x++){
+        const p=y*w+x;
+        if(edges[p]){
+          for(let yy=-1;yy<=1;yy++){
+            for(let xx=-1;xx<=1;xx++){
+              const q=((y+yy)*w+(x+xx))*4;
+              od[q]=Math.min(od[q],45);
+              od[q+1]=Math.min(od[q+1],45);
+              od[q+2]=Math.min(od[q+2],45);
+              od[q+3]=255;
+            }
+          }
+        }
+      }
+    }
+
+    ctx.putImageData(out,0,0);
+    state.processedCanvas=c;
+    render();
+  }
+
+  function pointerDistance(a,b){
+    return Math.hypot(b.x-a.x,b.y-a.y);
+  }
+  function pointerAngle(a,b){
+    return Math.atan2(b.y-a.y,b.x-a.x);
+  }
+  function midpoint(a,b){
+    return {x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+  }
+
+  function localPoint(e){
+    const r=workspace.getBoundingClientRect();
+    const {dpr}=canvasDims();
+    return {x:(e.clientX-r.left)*dpr,y:(e.clientY-r.top)*dpr};
+  }
+
+  imageCanvas.addEventListener('pointerdown',e=>{
+    if(state.locked || !state.img) return;
+    imageCanvas.setPointerCapture(e.pointerId);
+    state.pointers.set(e.pointerId,localPoint(e));
+
+    const pts=[...state.pointers.values()];
+    if(pts.length===1){
+      state.gestureStart={
+        type:'drag',
+        p:pts[0],
+        x:state.x,y:state.y
+      };
+    } else if(pts.length>=2){
+      const a=pts[0],b=pts[1];
+      state.gestureStart={
+        type:'pinch',
+        dist:pointerDistance(a,b),
+        angle:pointerAngle(a,b),
+        mid:midpoint(a,b),
+        x:state.x,y:state.y,
+        scale:state.scale,
+        rotation:state.rotation
+      };
+    }
+  });
+
+  imageCanvas.addEventListener('pointermove',e=>{
+    if(state.locked || !state.pointers.has(e.pointerId)) return;
+    state.pointers.set(e.pointerId,localPoint(e));
+    const pts=[...state.pointers.values()];
+    const g=state.gestureStart;
+    if(!g) return;
+
+    if(pts.length===1 && g.type==='drag'){
+      const p=pts[0];
+      state.x=g.x+(p.x-g.p.x);
+      state.y=g.y+(p.y-g.p.y);
+    } else if(pts.length>=2){
+      const a=pts[0],b=pts[1];
+      if(g.type!=='pinch'){
+        state.gestureStart={
+          type:'pinch',
+          dist:pointerDistance(a,b),
+          angle:pointerAngle(a,b),
+          mid:midpoint(a,b),
+          x:state.x,y:state.y,
+          scale:state.scale,
+          rotation:state.rotation
+        };
+        return;
+      }
+      const dist=pointerDistance(a,b);
+      const angle=pointerAngle(a,b);
+      const mid=midpoint(a,b);
+      state.scale=Math.max(.05,Math.min(20,g.scale*(dist/g.dist)));
+      state.rotation=g.rotation+(angle-g.angle);
+      state.x=g.x+(mid.x-g.mid.x);
+      state.y=g.y+(mid.y-g.mid.y);
+    }
+    render();
+  });
+
+  function endPointer(e){
+    state.pointers.delete(e.pointerId);
+    const pts=[...state.pointers.values()];
+    if(pts.length===1){
+      state.gestureStart={type:'drag',p:pts[0],x:state.x,y:state.y};
+    } else if(pts.length===0){
+      state.gestureStart=null;
+    }
+  }
+  imageCanvas.addEventListener('pointerup',endPointer);
+  imageCanvas.addEventListener('pointercancel',endPointer);
+
+  lockBtn.addEventListener('click',()=>{
+    state.locked=!state.locked;
+    workspace.classList.toggle('locked',state.locked);
+    lockBtn.textContent=state.locked?'🔓 Unlock':'🔒 Lock to trace';
+    lockBtn.classList.toggle('danger',state.locked);
+    status.textContent=state.locked?'Locked for tracing':'Unlocked';
+    state.pointers.clear();state.gestureStart=null;
+  });
+
+  window.addEventListener('resize',resizeCanvases);
+  resizeCanvases();
+})();
+</script>
+</body>
+</html>
