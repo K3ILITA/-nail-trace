@@ -94,7 +94,13 @@
   .design-card img{width:100%;aspect-ratio:1/1;object-fit:contain;background:white;border-radius:9px;display:block}
   .design-card span{display:block;font-size:11px;color:#e7e8eb;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .library-message{font-size:12px;color:var(--muted);padding:8px 0}
-  @media (min-width:520px){.design-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+  .edit-tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-bottom:10px}
+  .crop-panel{display:none;margin:10px 0 12px;padding:12px;background:#101319;border:1px solid var(--border);border-radius:12px}
+  .crop-panel.open{display:block}
+  .crop-preview{width:100%;height:150px;background:white;border-radius:10px;border:1px solid var(--border);display:block;margin-bottom:12px}
+  .crop-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .crop-control span{float:right;color:#e7e8eb}
+  @media (min-width:520px){.design-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.edit-tools{grid-template-columns:repeat(4,minmax(0,1fr))}}
 
 </style>
 </head>
@@ -103,7 +109,7 @@
   <header>
     <div>
       <h1>Nail Trace</h1>
-      <div class="badge">prototype v0.2</div>
+      <div class="badge">prototype v0.3</div>
     </div>
     <div id="status" class="status">Choose a design</div>
   </header>
@@ -200,6 +206,42 @@
 
     <section class="card">
       <h2>5. Position & trace</h2>
+
+      <div class="edit-tools">
+        <button id="cropBtn">✂️ Crop</button>
+        <button id="rotateBtn">↻ Rotate 90°</button>
+        <button id="mirrorBtn">↔ Mirror</button>
+        <button id="flipBtn">↕ Flip</button>
+      </div>
+
+      <div id="cropPanel" class="crop-panel">
+        <canvas id="cropPreview" class="crop-preview" width="480" height="300"></canvas>
+        <div class="crop-grid">
+          <div class="crop-control">
+            <label for="cropLeft">Trim left <span id="cropLeftValue">0%</span></label>
+            <input id="cropLeft" type="range" min="0" max="45" value="0" />
+          </div>
+          <div class="crop-control">
+            <label for="cropRight">Trim right <span id="cropRightValue">0%</span></label>
+            <input id="cropRight" type="range" min="0" max="45" value="0" />
+          </div>
+          <div class="crop-control">
+            <label for="cropTop">Trim top <span id="cropTopValue">0%</span></label>
+            <input id="cropTop" type="range" min="0" max="45" value="0" />
+          </div>
+          <div class="crop-control">
+            <label for="cropBottom">Trim bottom <span id="cropBottomValue">0%</span></label>
+            <input id="cropBottom" type="range" min="0" max="45" value="0" />
+          </div>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <button id="applyCropBtn" class="primary">Apply crop</button>
+          <button id="cancelCropBtn">Cancel</button>
+          <button id="undoCropBtn">Undo crop</button>
+        </div>
+        <div class="hint">Use the sliders to trim the image edges. The preview above shows what will remain.</div>
+      </div>
+
       <div class="row">
         <button id="fitBtn">Fit to nail</button>
         <button id="centerBtn">Center</button>
@@ -208,7 +250,7 @@
       <div class="row" style="margin-top:10px">
         <button id="lockBtn" class="primary">🔒 Lock to trace</button>
       </div>
-      <div class="hint">When locked, touches on the image area no longer move, zoom, or rotate the artwork. Tap the lock button again to unlock.</div>
+      <div class="hint">Drag, pinch, rotate, mirror, flip, or crop before locking. When locked, touching the tracing area will not move the artwork.</div>
     </section>
 
   </div>
@@ -252,6 +294,25 @@
   const allColorsBtn = document.getElementById('allColorsBtn');
   const noColorsBtn = document.getElementById('noColorsBtn');
 
+  const cropBtn = document.getElementById('cropBtn');
+  const rotateBtn = document.getElementById('rotateBtn');
+  const mirrorBtn = document.getElementById('mirrorBtn');
+  const flipBtn = document.getElementById('flipBtn');
+  const cropPanel = document.getElementById('cropPanel');
+  const cropPreview = document.getElementById('cropPreview');
+  const cropPreviewCtx = cropPreview.getContext('2d');
+  const cropLeft = document.getElementById('cropLeft');
+  const cropRight = document.getElementById('cropRight');
+  const cropTop = document.getElementById('cropTop');
+  const cropBottom = document.getElementById('cropBottom');
+  const cropLeftValue = document.getElementById('cropLeftValue');
+  const cropRightValue = document.getElementById('cropRightValue');
+  const cropTopValue = document.getElementById('cropTopValue');
+  const cropBottomValue = document.getElementById('cropBottomValue');
+  const applyCropBtn = document.getElementById('applyCropBtn');
+  const cancelCropBtn = document.getElementById('cancelCropBtn');
+  const undoCropBtn = document.getElementById('undoCropBtn');
+
   const fitBtn = document.getElementById('fitBtn');
   const centerBtn = document.getElementById('centerBtn');
   const resetTransformBtn = document.getElementById('resetTransformBtn');
@@ -266,6 +327,9 @@
     y: 0,
     scale: 1,
     rotation: 0,
+    flipX: 1,
+    flipY: 1,
+    cropHistory: [],
     locked: false,
     pointers: new Map(),
     gestureStart: null,
@@ -392,7 +456,7 @@
       ictx.save();
       ictx.translate(w/2 + state.x, h/2 + state.y);
       ictx.rotate(state.rotation);
-      ictx.scale(state.scale, state.scale);
+      ictx.scale(state.scale * state.flipX, state.scale * state.flipY);
       ictx.drawImage(source, -sw/2, -sh/2);
       ictx.restore();
     }
@@ -417,6 +481,9 @@
     state.imgBitmapCanvas = buildBaseCanvas(img);
     state.processedCanvas = null;
     state.x = 0; state.y = 0; state.rotation = 0;
+    state.flipX = 1; state.flipY = 1;
+    state.cropHistory = [];
+    updateEditButtonStates();
     fitImageToWorkspace();
     extractPalette();
     updateProcessed();
@@ -558,6 +625,155 @@
 
   closeLibraryBtn.addEventListener('click', () => libraryPanel.classList.remove('open'));
 
+  function cloneCanvas(source) {
+    const c = document.createElement('canvas');
+    c.width = source.width;
+    c.height = source.height;
+    c.getContext('2d').drawImage(source, 0, 0);
+    return c;
+  }
+
+  function updateEditButtonStates() {
+    mirrorBtn.classList.toggle('active', state.flipX === -1);
+    flipBtn.classList.toggle('active', state.flipY === -1);
+    undoCropBtn.disabled = !state.cropHistory.length;
+  }
+
+  function resetCropSliders() {
+    [cropLeft, cropRight, cropTop, cropBottom].forEach(el => el.value = 0);
+    updateCropPreview();
+  }
+
+  function getCropValues() {
+    return {
+      left: Number(cropLeft.value) / 100,
+      right: Number(cropRight.value) / 100,
+      top: Number(cropTop.value) / 100,
+      bottom: Number(cropBottom.value) / 100
+    };
+  }
+
+  function updateCropPreview() {
+    cropLeftValue.textContent = `${cropLeft.value}%`;
+    cropRightValue.textContent = `${cropRight.value}%`;
+    cropTopValue.textContent = `${cropTop.value}%`;
+    cropBottomValue.textContent = `${cropBottom.value}%`;
+
+    cropPreviewCtx.clearRect(0, 0, cropPreview.width, cropPreview.height);
+    cropPreviewCtx.fillStyle = '#fff';
+    cropPreviewCtx.fillRect(0, 0, cropPreview.width, cropPreview.height);
+    if (!state.imgBitmapCanvas) return;
+
+    const src = state.imgBitmapCanvas;
+    const v = getCropValues();
+    const sx = Math.round(src.width * v.left);
+    const sy = Math.round(src.height * v.top);
+    const sw = Math.max(1, src.width - sx - Math.round(src.width * v.right));
+    const sh = Math.max(1, src.height - sy - Math.round(src.height * v.bottom));
+    const pad = 14;
+    const scale = Math.min((cropPreview.width - pad*2)/sw, (cropPreview.height - pad*2)/sh);
+    const dw = sw * scale;
+    const dh = sh * scale;
+    const dx = (cropPreview.width - dw)/2;
+    const dy = (cropPreview.height - dh)/2;
+    cropPreviewCtx.drawImage(src, sx, sy, sw, sh, dx, dy, dw, dh);
+    cropPreviewCtx.strokeStyle = '#ff5ca8';
+    cropPreviewCtx.lineWidth = 4;
+    cropPreviewCtx.strokeRect(dx, dy, dw, dh);
+  }
+
+  [cropLeft, cropRight, cropTop, cropBottom].forEach(el => {
+    el.addEventListener('input', updateCropPreview);
+  });
+
+  cropBtn.addEventListener('click', () => {
+    if (!state.imgBitmapCanvas) {
+      status.textContent = 'Choose a design first';
+      return;
+    }
+    cropPanel.classList.toggle('open');
+    if (cropPanel.classList.contains('open')) resetCropSliders();
+  });
+
+  cancelCropBtn.addEventListener('click', () => {
+    cropPanel.classList.remove('open');
+    resetCropSliders();
+  });
+
+  applyCropBtn.addEventListener('click', () => {
+    if (!state.imgBitmapCanvas) return;
+    const src = state.imgBitmapCanvas;
+    const v = getCropValues();
+    const sx = Math.round(src.width * v.left);
+    const sy = Math.round(src.height * v.top);
+    const sw = src.width - sx - Math.round(src.width * v.right);
+    const sh = src.height - sy - Math.round(src.height * v.bottom);
+    if (sw < 10 || sh < 10) {
+      status.textContent = 'Crop is too small';
+      return;
+    }
+    state.cropHistory.push(cloneCanvas(src));
+    if (state.cropHistory.length > 10) state.cropHistory.shift();
+
+    const cropped = document.createElement('canvas');
+    cropped.width = sw;
+    cropped.height = sh;
+    cropped.getContext('2d').drawImage(src, sx, sy, sw, sh, 0, 0, sw, sh);
+    state.imgBitmapCanvas = cropped;
+    state.processedCanvas = null;
+    extractPalette();
+    updateProcessed();
+    fitImageToWorkspace();
+    cropPanel.classList.remove('open');
+    resetCropSliders();
+    updateEditButtonStates();
+    status.textContent = 'Crop applied';
+  });
+
+  undoCropBtn.addEventListener('click', () => {
+    if (!state.cropHistory.length) return;
+    state.imgBitmapCanvas = state.cropHistory.pop();
+    state.processedCanvas = null;
+    extractPalette();
+    updateProcessed();
+    fitImageToWorkspace();
+    updateEditButtonStates();
+    status.textContent = 'Crop undone';
+  });
+
+  rotateBtn.addEventListener('click', () => {
+    if (!state.imgBitmapCanvas) {
+      status.textContent = 'Choose a design first';
+      return;
+    }
+    state.rotation += Math.PI / 2;
+    if (state.rotation >= Math.PI * 2) state.rotation -= Math.PI * 2;
+    render();
+    status.textContent = 'Rotated 90°';
+  });
+
+  mirrorBtn.addEventListener('click', () => {
+    if (!state.imgBitmapCanvas) {
+      status.textContent = 'Choose a design first';
+      return;
+    }
+    state.flipX *= -1;
+    updateEditButtonStates();
+    render();
+    status.textContent = state.flipX === -1 ? 'Mirrored' : 'Mirror off';
+  });
+
+  flipBtn.addEventListener('click', () => {
+    if (!state.imgBitmapCanvas) {
+      status.textContent = 'Choose a design first';
+      return;
+    }
+    state.flipY *= -1;
+    updateEditButtonStates();
+    render();
+    status.textContent = state.flipY === -1 ? 'Flipped vertically' : 'Vertical flip off';
+  });
+
   function fitImageToWorkspace() {
     if (!state.imgBitmapCanvas) return;
     const {w,h} = canvasDims();
@@ -580,7 +796,12 @@
   });
 
   centerBtn.addEventListener('click',()=>{state.x=0;state.y=0;render()});
-  resetTransformBtn.addEventListener('click',fitImageToWorkspace);
+  resetTransformBtn.addEventListener('click',()=>{
+    state.flipX=1; state.flipY=1; state.rotation=0;
+    updateEditButtonStates();
+    fitImageToWorkspace();
+    status.textContent='Image position reset';
+  });
 
   [nailWidth,nailLength,nailShape].forEach(el => el.addEventListener('input', render));
 
@@ -873,6 +1094,8 @@
   });
 
   window.addEventListener('resize',resizeCanvases);
+  updateEditButtonStates();
+  updateCropPreview();
   resizeCanvases();
 })();
 </script>
