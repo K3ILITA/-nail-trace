@@ -36,7 +36,7 @@
     background:white;
     touch-action:none;
   }
-  canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .workspace > canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   #nailCanvas{pointer-events:none}
   .lock-overlay{
     position:absolute;inset:0;display:none;align-items:flex-end;justify-content:center;
@@ -97,7 +97,8 @@
   .edit-tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-bottom:10px}
   .crop-panel{display:none;margin:10px 0 12px;padding:12px;background:#101319;border:1px solid var(--border);border-radius:12px}
   .crop-panel.open{display:block}
-  .crop-preview{width:100%;height:150px;background:white;border-radius:10px;border:1px solid var(--border);display:block;margin-bottom:12px}
+  .crop-preview{position:relative;inset:auto;width:100%;height:150px;background:white;border-radius:10px;border:1px solid var(--border);display:block;margin-bottom:12px;pointer-events:none}
+  .crop-control input[type="range"]{touch-action:pan-x;min-height:36px}
   .crop-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .crop-control span{float:right;color:#e7e8eb}
   @media (min-width:520px){.design-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.edit-tools{grid-template-columns:repeat(4,minmax(0,1fr))}}
@@ -182,7 +183,7 @@
   <header>
     <div>
       <h1>Nail Trace</h1>
-      <div class="badge">prototype v0.4</div>
+      <div class="badge">prototype v0.4.1</div>
     </div>
     <div id="status" class="status">Choose a design</div>
   </header>
