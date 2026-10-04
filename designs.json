@@ -1,0 +1,754 @@
+{
+  "categories": [
+    {
+      "id": "holidays",
+      "label": "Holidays",
+      "subcategories": [
+        {
+          "id": "halloween",
+          "label": "Halloween",
+          "path": "images/holidays/halloween",
+          "designs": [
+            {
+              "name": "Ghost",
+              "file": "ghost.png"
+            },
+            {
+              "name": "Ghost Pair",
+              "file": "ghost-pair.png"
+            },
+            {
+              "name": "Pumpkin",
+              "file": "pumpkin.png"
+            },
+            {
+              "name": "Skull",
+              "file": "skull.png"
+            }
+          ]
+        },
+        {
+          "id": "christmas",
+          "label": "Christmas",
+          "path": "images/holidays/christmas",
+          "designs": [
+            {
+              "name": "Pine Trees",
+              "file": "pine-trees.png"
+            }
+          ]
+        },
+        {
+          "id": "valentines",
+          "label": "Valentine's Day",
+          "path": "images/holidays/valentines",
+          "designs": [
+            {
+              "name": "Flaming Heart",
+              "file": "flaming-heart.png"
+            },
+            {
+              "name": "Heart",
+              "file": "heart.png"
+            },
+            {
+              "name": "Heart Balloon",
+              "file": "heart-balloon.png"
+            },
+            {
+              "name": "Heart Lock",
+              "file": "heart-lock.png"
+            },
+            {
+              "name": "Soft Hearts",
+              "file": "soft-hearts.png"
+            }
+          ]
+        },
+        {
+          "id": "easter",
+          "label": "Easter",
+          "path": "images/holidays/easter",
+          "designs": [
+            {
+              "name": "Rabbit",
+              "file": "rabbit.png"
+            },
+            {
+              "name": "Sleeping Rabbits",
+              "file": "sleeping-rabbits.png"
+            }
+          ]
+        },
+        {
+          "id": "thanksgiving",
+          "label": "Thanksgiving",
+          "path": "images/holidays/thanksgiving",
+          "designs": []
+        }
+      ]
+    },
+    {
+      "id": "food",
+      "label": "Food",
+      "subcategories": [
+        {
+          "id": "fruits",
+          "label": "Fruits",
+          "path": "images/food/fruits",
+          "designs": [
+            {
+              "name": "Cherry Stamp",
+              "file": "cherry-stamp.png"
+            },
+            {
+              "name": "Fruit Bowl",
+              "file": "fruit-bowl.png"
+            },
+            {
+              "name": "Potted Strawberry",
+              "file": "potted-strawberry.png"
+            },
+            {
+              "name": "Tomato",
+              "file": "tomato.png"
+            }
+          ]
+        },
+        {
+          "id": "desserts",
+          "label": "Desserts",
+          "path": "images/food/desserts",
+          "designs": [
+            {
+              "name": "Cake Slice",
+              "file": "cake-slice.png"
+            },
+            {
+              "name": "Ice Cream",
+              "file": "ice-cream.png"
+            },
+            {
+              "name": "Layer Cake",
+              "file": "layer-cake.png"
+            },
+            {
+              "name": "Pancakes",
+              "file": "pancakes.png"
+            },
+            {
+              "name": "Pie Slice",
+              "file": "pie-slice.png"
+            }
+          ]
+        },
+        {
+          "id": "drinks",
+          "label": "Drinks",
+          "path": "images/food/drinks",
+          "designs": [
+            {
+              "name": "Coffee",
+              "file": "coffee.png"
+            },
+            {
+              "name": "Drink Jar",
+              "file": "drink-jar.png"
+            },
+            {
+              "name": "Milk Carton",
+              "file": "milk-carton.png"
+            },
+            {
+              "name": "Milkshake",
+              "file": "milkshake.png"
+            },
+            {
+              "name": "Oat Milk",
+              "file": "oat-milk.png"
+            }
+          ]
+        },
+        {
+          "id": "snacks",
+          "label": "Snacks",
+          "path": "images/food/snacks",
+          "designs": [
+            {
+              "name": "Cheese",
+              "file": "cheese.png"
+            },
+            {
+              "name": "Corn",
+              "file": "corn.png"
+            },
+            {
+              "name": "Gummy Bear",
+              "file": "gummy-bear.png"
+            },
+            {
+              "name": "Hot Dog",
+              "file": "hot-dog.png"
+            },
+            {
+              "name": "Lollipop",
+              "file": "lollipop.png"
+            },
+            {
+              "name": "Pizza",
+              "file": "pizza.png"
+            },
+            {
+              "name": "Pizza Slice",
+              "file": "pizza-slice.png"
+            },
+            {
+              "name": "Pretzel",
+              "file": "pretzel.png"
+            },
+            {
+              "name": "Ramen",
+              "file": "ramen.png"
+            },
+            {
+              "name": "Sushi Roll",
+              "file": "sushi-roll.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "animals",
+      "label": "Animals",
+      "subcategories": [
+        {
+          "id": "farm",
+          "label": "Farm",
+          "path": "images/animals/farm",
+          "designs": [
+            {
+              "name": "Sheep",
+              "file": "sheep.png"
+            }
+          ]
+        },
+        {
+          "id": "ocean",
+          "label": "Ocean",
+          "path": "images/animals/ocean",
+          "designs": [
+            {
+              "name": "Crab",
+              "file": "crab.png"
+            },
+            {
+              "name": "Fish",
+              "file": "fish.png"
+            },
+            {
+              "name": "Jellyfish",
+              "file": "jellyfish.png"
+            },
+            {
+              "name": "Long Jellyfish",
+              "file": "long-jellyfish.png"
+            },
+            {
+              "name": "Octopus",
+              "file": "octopus.png"
+            },
+            {
+              "name": "Shell",
+              "file": "shell.png"
+            }
+          ]
+        },
+        {
+          "id": "pets",
+          "label": "Pets",
+          "path": "images/animals/pets",
+          "designs": [
+            {
+              "name": "Bunny",
+              "file": "bunny.png"
+            },
+            {
+              "name": "Cat",
+              "file": "cat.png"
+            },
+            {
+              "name": "Dog",
+              "file": "dog.png"
+            },
+            {
+              "name": "Paw Heart",
+              "file": "paw-heart.png"
+            },
+            {
+              "name": "Poodle",
+              "file": "poodle.png"
+            }
+          ]
+        },
+        {
+          "id": "insects",
+          "label": "Insects",
+          "path": "images/animals/insects",
+          "designs": [
+            {
+              "name": "Ant",
+              "file": "ant.png"
+            },
+            {
+              "name": "Bee",
+              "file": "bee.png"
+            },
+            {
+              "name": "Beetle",
+              "file": "beetle.png"
+            },
+            {
+              "name": "Butterfly",
+              "file": "butterfly.png"
+            },
+            {
+              "name": "Dragonfly",
+              "file": "dragonfly.png"
+            },
+            {
+              "name": "Ladybug",
+              "file": "ladybug.png"
+            },
+            {
+              "name": "Ladybugs",
+              "file": "ladybugs.png"
+            }
+          ]
+        },
+        {
+          "id": "wildlife",
+          "label": "Wildlife",
+          "path": "images/animals/wildlife",
+          "designs": [
+            {
+              "name": "Bird",
+              "file": "bird.png"
+            },
+            {
+              "name": "Crown Frog",
+              "file": "crown-frog.png"
+            },
+            {
+              "name": "Frog",
+              "file": "frog.png"
+            },
+            {
+              "name": "Frog on Lily Pad",
+              "file": "frog-lily-pad.png"
+            },
+            {
+              "name": "Kangaroo",
+              "file": "kangaroo.png"
+            },
+            {
+              "name": "Snail",
+              "file": "snail.png"
+            },
+            {
+              "name": "Spiral Snail",
+              "file": "spiral-snail.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nature",
+      "label": "Nature",
+      "path": "images/nature",
+      "designs": [
+        {
+          "name": "Acorn",
+          "file": "acorn.png"
+        },
+        {
+          "name": "Bare Branch",
+          "file": "bare-branch.png"
+        },
+        {
+          "name": "Cactus",
+          "file": "cactus.png"
+        },
+        {
+          "name": "Daisy",
+          "file": "daisy.png"
+        },
+        {
+          "name": "Flower",
+          "file": "flower.png"
+        },
+        {
+          "name": "Forest Mushroom House",
+          "file": "forest-mushroom-house.png"
+        },
+        {
+          "name": "Leaf Branch",
+          "file": "leaf-branch.png"
+        },
+        {
+          "name": "Leaves",
+          "file": "leaves.png"
+        },
+        {
+          "name": "Maple Leaf",
+          "file": "maple-leaf.png"
+        },
+        {
+          "name": "Monstera Leaf",
+          "file": "monstera-leaf.png"
+        },
+        {
+          "name": "Mushroom",
+          "file": "mushroom.png"
+        },
+        {
+          "name": "Mushroom Cluster",
+          "file": "mushroom-cluster.png"
+        },
+        {
+          "name": "Mushroom House",
+          "file": "mushroom-house.png"
+        },
+        {
+          "name": "Potted Plant",
+          "file": "potted-plant.png"
+        },
+        {
+          "name": "Rain Clouds",
+          "file": "rain-clouds.png"
+        },
+        {
+          "name": "Rose",
+          "file": "rose.png"
+        },
+        {
+          "name": "Toadstool",
+          "file": "toadstool.png"
+        },
+        {
+          "name": "Tornado",
+          "file": "tornado.png"
+        },
+        {
+          "name": "Tulips",
+          "file": "tulips.png"
+        }
+      ]
+    },
+    {
+      "id": "space",
+      "label": "Space",
+      "path": "images/space",
+      "designs": [
+        {
+          "name": "Alien",
+          "file": "alien.png"
+        },
+        {
+          "name": "Moon",
+          "file": "moon.png"
+        },
+        {
+          "name": "Outline Star",
+          "file": "outline-star.png"
+        },
+        {
+          "name": "Planets",
+          "file": "planets.png"
+        },
+        {
+          "name": "Shooting Star",
+          "file": "shooting-star.png"
+        },
+        {
+          "name": "Sparkle",
+          "file": "sparkle.png"
+        },
+        {
+          "name": "Sparkle Star",
+          "file": "sparkle-star.png"
+        },
+        {
+          "name": "Star",
+          "file": "star.png"
+        },
+        {
+          "name": "Sun",
+          "file": "sun.png"
+        },
+        {
+          "name": "Tiny Shooting Star",
+          "file": "tiny-shooting-star.png"
+        },
+        {
+          "name": "UFO",
+          "file": "ufo.png"
+        }
+      ]
+    },
+    {
+      "id": "accessories",
+      "label": "Accessories",
+      "path": "images/accessories",
+      "designs": [
+        {
+          "name": "Bow",
+          "file": "bow.png"
+        },
+        {
+          "name": "Compact Mirror",
+          "file": "compact-mirror.png"
+        },
+        {
+          "name": "Cowboy Boots",
+          "file": "cowboy-boots.png"
+        },
+        {
+          "name": "Crown",
+          "file": "crown.png"
+        },
+        {
+          "name": "Hair Claw",
+          "file": "hair-claw.png"
+        },
+        {
+          "name": "Hand Mirror",
+          "file": "hand-mirror.png"
+        },
+        {
+          "name": "Handbag",
+          "file": "handbag.png"
+        },
+        {
+          "name": "Heel",
+          "file": "heel.png"
+        },
+        {
+          "name": "High Heels",
+          "file": "high-heels.png"
+        },
+        {
+          "name": "Nail Polish",
+          "file": "nail-polish.png"
+        },
+        {
+          "name": "Pearl Necklace",
+          "file": "pearl-necklace.png"
+        },
+        {
+          "name": "Scissors",
+          "file": "scissors.png"
+        },
+        {
+          "name": "Star Sunglasses",
+          "file": "star-sunglasses.png"
+        },
+        {
+          "name": "Sweater",
+          "file": "sweater.png"
+        }
+      ]
+    },
+    {
+      "id": "symbols",
+      "label": "Symbols",
+      "path": "images/symbols",
+      "designs": [
+        {
+          "name": "Anatomical Heart",
+          "file": "anatomical-heart.png"
+        },
+        {
+          "name": "Balloon",
+          "file": "balloon.png"
+        },
+        {
+          "name": "Balloon Dog",
+          "file": "balloon-dog.png"
+        },
+        {
+          "name": "Bandage",
+          "file": "bandage.png"
+        },
+        {
+          "name": "Candelabra",
+          "file": "candelabra.png"
+        },
+        {
+          "name": "Candle",
+          "file": "candle.png"
+        },
+        {
+          "name": "Checkered Flag",
+          "file": "checkered-flag.png"
+        },
+        {
+          "name": "Clock",
+          "file": "clock.png"
+        },
+        {
+          "name": "Envelope",
+          "file": "envelope.png"
+        },
+        {
+          "name": "Eye",
+          "file": "eye.png"
+        },
+        {
+          "name": "Female Symbol",
+          "file": "female-symbol.png"
+        },
+        {
+          "name": "Flame Face",
+          "file": "flame-face.png"
+        },
+        {
+          "name": "Hand",
+          "file": "hand.png"
+        },
+        {
+          "name": "House",
+          "file": "house.png"
+        },
+        {
+          "name": "Key",
+          "file": "key.png"
+        },
+        {
+          "name": "Letter S",
+          "file": "letter-s.png"
+        },
+        {
+          "name": "Magic Wand",
+          "file": "magic-wand.png"
+        },
+        {
+          "name": "Neutral Face",
+          "file": "neutral-face.png"
+        },
+        {
+          "name": "Paper Airplane",
+          "file": "paper-airplane.png"
+        },
+        {
+          "name": "Postage Stamp",
+          "file": "postage-stamp.png"
+        },
+        {
+          "name": "Puzzle Piece",
+          "file": "puzzle-piece.png"
+        },
+        {
+          "name": "Simple Paper Plane",
+          "file": "simple-paper-plane.png"
+        },
+        {
+          "name": "Sitting Bear",
+          "file": "sitting-bear.png"
+        },
+        {
+          "name": "Spiral",
+          "file": "spiral.png"
+        },
+        {
+          "name": "Taper Candle",
+          "file": "taper-candle.png"
+        },
+        {
+          "name": "Tarot Cards",
+          "file": "tarot-cards.png"
+        },
+        {
+          "name": "Teddy Bear",
+          "file": "teddy-bear.png"
+        },
+        {
+          "name": "Umbrella",
+          "file": "umbrella.png"
+        }
+      ]
+    },
+    {
+      "id": "extras",
+      "label": "Extras",
+      "path": "images/extras",
+      "designs": [
+        {
+          "name": "Boombox",
+          "file": "boombox.png"
+        },
+        {
+          "name": "Camera",
+          "file": "camera.png"
+        },
+        {
+          "name": "Cassette Tape",
+          "file": "cassette-tape.png"
+        },
+        {
+          "name": "Die",
+          "file": "die.png"
+        },
+        {
+          "name": "Eight Ball",
+          "file": "eight-ball.png"
+        },
+        {
+          "name": "Flip Phone",
+          "file": "flip-phone.png"
+        },
+        {
+          "name": "Headphones",
+          "file": "headphones.png"
+        },
+        {
+          "name": "Lava Lamp",
+          "file": "lava-lamp.png"
+        },
+        {
+          "name": "Notepad",
+          "file": "notepad.png"
+        },
+        {
+          "name": "Picnic Basket",
+          "file": "picnic-basket.png"
+        },
+        {
+          "name": "Polaroid Camera",
+          "file": "polaroid-camera.png"
+        },
+        {
+          "name": "Portrait",
+          "file": "portrait.png"
+        },
+        {
+          "name": "Scooter",
+          "file": "scooter.png"
+        },
+        {
+          "name": "Spoon",
+          "file": "spoon.png"
+        },
+        {
+          "name": "Vinyl Record",
+          "file": "vinyl-record.png"
+        },
+        {
+          "name": "Yarn Ball",
+          "file": "yarn-ball.png"
+        }
+      ]
+    }
+  ]
+}

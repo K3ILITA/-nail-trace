@@ -78,6 +78,24 @@
   .tiny{font-size:11px;color:var(--muted)}
   .status{font-size:12px;color:#d7d9de}
   .danger{background:#4a2026}
+
+  .source-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .source-actions button{min-height:44px}
+  #fileInput{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+  .library-panel{display:none;margin-top:12px;border-top:1px solid var(--border);padding-top:12px}
+  .library-panel.open{display:block}
+  .library-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+  .library-title strong{font-size:14px}
+  .chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 8px;-webkit-overflow-scrolling:touch}
+  .chip{flex:0 0 auto;padding:8px 11px;border-radius:999px;font-size:12px;background:#222733}
+  .chip.active{background:var(--accent);border-color:var(--accent);color:#1a0b12}
+  .design-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:8px}
+  .design-card{padding:7px;background:#0f1218;border:1px solid var(--border);border-radius:12px;text-align:center;overflow:hidden}
+  .design-card img{width:100%;aspect-ratio:1/1;object-fit:contain;background:white;border-radius:9px;display:block}
+  .design-card span{display:block;font-size:11px;color:#e7e8eb;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .library-message{font-size:12px;color:var(--muted);padding:8px 0}
+  @media (min-width:520px){.design-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
 </style>
 </head>
 <body>
@@ -85,9 +103,9 @@
   <header>
     <div>
       <h1>Nail Trace</h1>
-      <div class="badge">prototype v0.1</div>
+      <div class="badge">prototype v0.2</div>
     </div>
-    <div id="status" class="status">Choose a photo</div>
+    <div id="status" class="status">Choose a design</div>
   </header>
 
   <div class="workspace-wrap">
@@ -101,9 +119,25 @@
   <div class="controls">
 
     <section class="card">
-      <h2>1. Photo</h2>
+      <h2>1. Choose a design</h2>
       <input id="fileInput" type="file" accept="image/*" />
-      <div class="hint">Choose a nail-art reference from Photos. Drag with one finger. Pinch with two fingers to resize and rotate.</div>
+      <div class="source-actions">
+        <button id="browseLibraryBtn" class="primary">Browse designs</button>
+        <button id="uploadPhotoBtn">Upload my own</button>
+      </div>
+
+      <div id="libraryPanel" class="library-panel">
+        <div class="library-title">
+          <strong id="libraryHeading">Design Library</strong>
+          <button id="closeLibraryBtn" style="flex:0 0 auto;padding:7px 10px">Close</button>
+        </div>
+        <div id="categoryChips" class="chips"></div>
+        <div id="subcategoryChips" class="chips"></div>
+        <div id="designGrid" class="design-grid"></div>
+        <div id="libraryMessage" class="library-message"></div>
+      </div>
+
+      <div class="hint">Choose one of the built-in designs or upload your own image. Drag with one finger. Pinch with two fingers to resize and rotate.</div>
     </section>
 
     <section class="card">
@@ -189,6 +223,15 @@
   const nctx = nailCanvas.getContext('2d');
 
   const fileInput = document.getElementById('fileInput');
+  const uploadPhotoBtn = document.getElementById('uploadPhotoBtn');
+  const browseLibraryBtn = document.getElementById('browseLibraryBtn');
+  const closeLibraryBtn = document.getElementById('closeLibraryBtn');
+  const libraryPanel = document.getElementById('libraryPanel');
+  const libraryHeading = document.getElementById('libraryHeading');
+  const categoryChips = document.getElementById('categoryChips');
+  const subcategoryChips = document.getElementById('subcategoryChips');
+  const designGrid = document.getElementById('designGrid');
+  const libraryMessage = document.getElementById('libraryMessage');
   const nailWidth = document.getElementById('nailWidth');
   const nailLength = document.getElementById('nailLength');
   const nailShape = document.getElementById('nailShape');
@@ -228,7 +271,10 @@
     gestureStart: null,
     palette: [],
     enabledColors: new Set(),
-    pxPerMm: parseFloat(localStorage.getItem('nailtrace_pxPerMm')) || null
+    pxPerMm: parseFloat(localStorage.getItem('nailtrace_pxPerMm')) || null,
+    library: null,
+    selectedCategoryId: null,
+    selectedSubcategoryId: null
   };
 
   function resizeCanvases() {
@@ -366,24 +412,151 @@
     return c;
   }
 
+  function finishLoadedImage(img, message) {
+    state.img = img;
+    state.imgBitmapCanvas = buildBaseCanvas(img);
+    state.processedCanvas = null;
+    state.x = 0; state.y = 0; state.rotation = 0;
+    fitImageToWorkspace();
+    extractPalette();
+    updateProcessed();
+    status.textContent = message || 'Design loaded';
+  }
+
+  function loadImageFromUrl(src, message) {
+    const img = new Image();
+    img.onload = () => finishLoadedImage(img, message);
+    img.onerror = () => {
+      status.textContent = 'Could not load design';
+      libraryMessage.textContent = 'That design could not be loaded. Check that the image file exists in the repo.';
+    };
+    img.src = src;
+  }
+
+  uploadPhotoBtn.addEventListener('click', () => fileInput.click());
+
   fileInput.addEventListener('change', e => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
     const url = URL.createObjectURL(file);
     const img = new Image();
     img.onload = () => {
-      state.img = img;
-      state.imgBitmapCanvas = buildBaseCanvas(img);
-      state.processedCanvas = null;
-      state.x = 0; state.y = 0; state.rotation = 0;
-      fitImageToWorkspace();
-      extractPalette();
-      updateProcessed();
-      status.textContent = 'Photo loaded';
+      finishLoadedImage(img, 'Photo loaded');
       URL.revokeObjectURL(url);
+      libraryPanel.classList.remove('open');
     };
     img.src = url;
   });
+
+  function makeChip(label, isActive, onClick) {
+    const button = document.createElement('button');
+    button.className = 'chip' + (isActive ? ' active' : '');
+    button.textContent = label;
+    button.addEventListener('click', onClick);
+    return button;
+  }
+
+  function renderCategories() {
+    categoryChips.innerHTML = '';
+    subcategoryChips.innerHTML = '';
+    designGrid.innerHTML = '';
+    if (!state.library || !state.library.categories) return;
+
+    state.library.categories.forEach(category => {
+      categoryChips.appendChild(makeChip(
+        category.label,
+        category.id === state.selectedCategoryId,
+        () => {
+          state.selectedCategoryId = category.id;
+          state.selectedSubcategoryId = category.subcategories?.[0]?.id || null;
+          renderCategories();
+          renderSelectedCategory();
+        }
+      ));
+    });
+  }
+
+  function renderSelectedCategory() {
+    if (!state.library) return;
+    const category = state.library.categories.find(c => c.id === state.selectedCategoryId);
+    if (!category) return;
+
+    libraryHeading.textContent = category.label;
+    subcategoryChips.innerHTML = '';
+
+    if (category.subcategories && category.subcategories.length) {
+      category.subcategories.forEach(sub => {
+        subcategoryChips.appendChild(makeChip(
+          sub.label,
+          sub.id === state.selectedSubcategoryId,
+          () => {
+            state.selectedSubcategoryId = sub.id;
+            renderSelectedCategory();
+          }
+        ));
+      });
+      const selected = category.subcategories.find(s => s.id === state.selectedSubcategoryId) || category.subcategories[0];
+      state.selectedSubcategoryId = selected.id;
+      renderDesigns(selected.path, selected.designs || []);
+    } else {
+      renderDesigns(category.path, category.designs || []);
+    }
+
+    Array.from(categoryChips.children).forEach((chip, i) => {
+      chip.classList.toggle('active', state.library.categories[i].id === state.selectedCategoryId);
+    });
+  }
+
+  function renderDesigns(path, designs) {
+    designGrid.innerHTML = '';
+    libraryMessage.textContent = '';
+
+    if (!designs.length) {
+      libraryMessage.textContent = 'No designs in this section yet.';
+      return;
+    }
+
+    designs.forEach(design => {
+      const src = `${path}/${design.file}`;
+      const button = document.createElement('button');
+      button.className = 'design-card';
+      button.innerHTML = `<img src="${src}" alt="${design.name}" loading="lazy"><span>${design.name}</span>`;
+      button.addEventListener('click', () => {
+        loadImageFromUrl(src, `${design.name} loaded`);
+        libraryPanel.classList.remove('open');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+      designGrid.appendChild(button);
+    });
+  }
+
+  async function loadLibrary() {
+    if (state.library) return true;
+    libraryMessage.textContent = 'Loading designs...';
+    try {
+      const response = await fetch('designs.json', { cache: 'no-store' });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      state.library = await response.json();
+      const first = state.library.categories?.[0];
+      state.selectedCategoryId = first?.id || null;
+      state.selectedSubcategoryId = first?.subcategories?.[0]?.id || null;
+      renderCategories();
+      renderSelectedCategory();
+      libraryMessage.textContent = '';
+      return true;
+    } catch (err) {
+      libraryMessage.textContent = 'The design library loads when Nail Trace is opened from GitHub Pages (or a local web server).';
+      return false;
+    }
+  }
+
+  browseLibraryBtn.addEventListener('click', async () => {
+    libraryPanel.classList.add('open');
+    libraryHeading.textContent = 'Design Library';
+    await loadLibrary();
+  });
+
+  closeLibraryBtn.addEventListener('click', () => libraryPanel.classList.remove('open'));
 
   function fitImageToWorkspace() {
     if (!state.imgBitmapCanvas) return;
