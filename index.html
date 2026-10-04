@@ -6,6 +6,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <title>Nail Trace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Betania+Patmos&family=Borel&family=Eagle+Lake&family=Homemade+Apple&family=League+Script&family=Meddon&family=Moo+Lah+Lah&family=Raleway+Dots&family=UnifrakturCook:wght@700&family=UnifrakturMaguntia&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#0f1115;
@@ -103,6 +106,27 @@
   .crop-control span{float:right;color:#e7e8eb}
   @media (min-width:520px){.design-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.edit-tools{grid-template-columns:repeat(4,minmax(0,1fr))}}
 
+  .lettering-input{
+    width:100%;background:#0f1218;border:1px solid var(--border);border-radius:12px;color:var(--text);
+    padding:12px 13px;font-size:18px;outline:none
+  }
+  .lettering-input:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(255,92,168,.16)}
+  .font-filter-row{display:flex;gap:7px;overflow-x:auto;padding:2px 0 9px;-webkit-overflow-scrolling:touch}
+  .font-filter{flex:0 0 auto;padding:7px 10px;border-radius:999px;font-size:11px;min-height:36px}
+  .font-filter.active{background:var(--accent);border-color:var(--accent);color:#1a0b12}
+  .font-picker{display:grid;gap:8px;max-height:330px;overflow-y:auto;padding:2px;-webkit-overflow-scrolling:touch}
+  .font-option{display:block;width:100%;text-align:left;padding:10px 12px;background:#101319;border:1px solid var(--border);border-radius:13px;min-height:70px}
+  .font-option.active{border-color:var(--accent);box-shadow:0 0 0 2px rgba(255,92,168,.18)}
+  .font-sample{display:block;font-size:30px;line-height:1.15;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px}
+  .font-name{display:block;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:10px;color:var(--muted)}
+  .lettering-live-preview{
+    display:flex;align-items:center;justify-content:center;min-height:112px;background:#fff;color:#000;border-radius:13px;
+    border:1px solid var(--border);padding:14px;overflow:hidden;margin:10px 0
+  }
+  .lettering-live-preview span{font-size:46px;line-height:1.15;text-align:center;overflow-wrap:anywhere}
+  .lettering-controls{display:grid;grid-template-columns:1fr;gap:10px;margin-top:10px}
+  .lettering-meta{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:11px;margin-top:4px}
+
   .mobile-tabs,.mobile-action-bar,.nail-summary{display:none}
 
   @media (max-width:700px){
@@ -123,11 +147,11 @@
     }
 
     .mobile-tabs{
-      display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:6px 10px 8px;
+      display:grid;grid-template-columns:repeat(5,1fr);gap:5px;padding:6px 8px 8px;
       position:sticky;top:50px;z-index:7;background:rgba(15,17,21,.96);backdrop-filter:blur(10px);
       border-bottom:1px solid var(--border)
     }
-    .mobile-tab{padding:9px 4px;min-height:40px;font-size:12px;border-radius:10px}
+    .mobile-tab{padding:9px 2px;min-height:40px;font-size:11px;border-radius:10px}
     .mobile-tab.active{background:var(--accent);border-color:var(--accent);color:#1a0b12}
 
     .controls{padding:8px 10px 18px;gap:9px}
@@ -145,6 +169,12 @@
     .seg button{font-size:12px;padding:9px 5px}
     .edit-tools{grid-template-columns:repeat(2,1fr);gap:7px}
     .edit-tools button{font-size:12px}
+
+    .font-picker{max-height:38svh}
+    .font-option{min-height:66px;padding:9px 10px}
+    .font-sample{font-size:28px}
+    .lettering-live-preview{min-height:96px;margin:8px 0}
+    .lettering-live-preview span{font-size:40px}
 
     .library-panel.open{
       display:block;position:fixed;z-index:30;inset:0;background:var(--bg);
@@ -183,7 +213,7 @@
   <header>
     <div>
       <h1>Nail Trace</h1>
-      <div class="badge">prototype v0.4.1</div>
+      <div class="badge">prototype v0.5</div>
     </div>
     <div id="status" class="status">Choose a design</div>
   </header>
@@ -202,6 +232,7 @@
     <button class="mobile-tab" data-mobile-target="nail">Nail</button>
     <button class="mobile-tab" data-mobile-target="view">View</button>
     <button class="mobile-tab" data-mobile-target="edit">Edit</button>
+    <button class="mobile-tab" data-mobile-target="lettering">Text</button>
   </nav>
 
   <div class="controls">
@@ -335,6 +366,30 @@
       <div class="hint">Drag, pinch, rotate, mirror, flip, or crop before locking. When locked, touching the tracing area will not move the artwork.</div>
     </section>
 
+    <section class="card mobile-panel" data-mobile-panel="lettering">
+      <h2>6. Lettering</h2>
+      <label for="letteringText">Type your lettering</label>
+      <input id="letteringText" class="lettering-input" type="text" value="Nail Art" maxlength="40" autocomplete="off" autocapitalize="off" spellcheck="false" />
+
+      <div id="letteringLivePreview" class="lettering-live-preview">
+        <span id="letteringLiveText">Nail Art</span>
+      </div>
+
+      <div id="fontFilterRow" class="font-filter-row" aria-label="Font styles"></div>
+      <div id="fontPicker" class="font-picker" aria-label="Choose a font"></div>
+
+      <div class="lettering-controls">
+        <div>
+          <label for="letterThickness">Letter thickness <span id="letterThicknessValue">0</span></label>
+          <input id="letterThickness" type="range" min="0" max="8" step="1" value="0" />
+          <div class="lettering-meta"><span>Original</span><span>Bolder</span></div>
+        </div>
+      </div>
+
+      <button id="addLetteringBtn" class="primary" style="width:100%;margin-top:12px">Add lettering to nail</button>
+      <div id="fontLoadStatus" class="hint">Choose a font by tapping the preview written in that font. Internet access is needed the first time a Google Font loads.</div>
+    </section>
+
   </div>
 
   <div class="mobile-action-bar">
@@ -410,6 +465,16 @@
   const mobileTabs = Array.from(document.querySelectorAll('.mobile-tab'));
   const mobilePanels = Array.from(document.querySelectorAll('.mobile-panel'));
 
+  const letteringText = document.getElementById('letteringText');
+  const letteringLivePreview = document.getElementById('letteringLivePreview');
+  const letteringLiveText = document.getElementById('letteringLiveText');
+  const fontFilterRow = document.getElementById('fontFilterRow');
+  const fontPicker = document.getElementById('fontPicker');
+  const letterThickness = document.getElementById('letterThickness');
+  const letterThicknessValue = document.getElementById('letterThicknessValue');
+  const addLetteringBtn = document.getElementById('addLetteringBtn');
+  const fontLoadStatus = document.getElementById('fontLoadStatus');
+
   function setMobilePanel(target) {
     mobileTabs.forEach(tab => tab.classList.toggle('active', tab.dataset.mobileTarget === target));
     mobilePanels.forEach(panel => panel.classList.toggle('mobile-active', panel.dataset.mobilePanel === target));
@@ -445,7 +510,9 @@
     pxPerMm: parseFloat(localStorage.getItem('nailtrace_pxPerMm')) || null,
     library: null,
     selectedCategoryId: null,
-    selectedSubcategoryId: null
+    selectedSubcategoryId: null,
+    selectedFont: 'UnifrakturMaguntia',
+    selectedFontCategory: 'All'
   };
 
   function resizeCanvases() {
@@ -1205,6 +1272,163 @@
   lockBtn.addEventListener('click', toggleTraceLock);
   mobileLockBtn.addEventListener('click', toggleTraceLock);
   mobileFitBtn.addEventListener('click', () => fitBtn.click());
+
+  const NAIL_FONTS = [
+    { name:'UnifrakturMaguntia', category:'Gothic', css:"'UnifrakturMaguntia', serif", load:'400 48px UnifrakturMaguntia' },
+    { name:'UnifrakturCook', category:'Gothic', css:"'UnifrakturCook', serif", load:'700 48px UnifrakturCook' },
+    { name:'League Script', category:'Script', css:"'League Script', cursive", load:'400 48px League Script' },
+    { name:'Meddon', category:'Script', css:"'Meddon', cursive", load:'400 48px Meddon' },
+    { name:'Homemade Apple', category:'Script', css:"'Homemade Apple', cursive", load:'400 48px Homemade Apple' },
+    { name:'Borel', category:'Script', css:"'Borel', cursive", load:'400 48px Borel' },
+    { name:'Raleway Dots', category:'Decorative', css:"'Raleway Dots', sans-serif", load:'400 48px Raleway Dots' },
+    { name:'Eagle Lake', category:'Decorative', css:"'Eagle Lake', serif", load:'400 48px Eagle Lake' },
+    { name:'Moo Lah Lah', category:'Decorative', css:"'Moo Lah Lah', cursive", load:'400 48px Moo Lah Lah' },
+    { name:'Betania Patmos', category:'Handwritten', css:"'Betania Patmos', cursive", load:'400 48px Betania Patmos' }
+  ];
+  const FONT_CATEGORIES = ['All','Gothic','Script','Decorative','Handwritten'];
+
+  function currentLetteringText() {
+    return (letteringText.value || '').trim() || 'Nail Art';
+  }
+
+  function selectedFontRecord() {
+    return NAIL_FONTS.find(f => f.name === state.selectedFont) || NAIL_FONTS[0];
+  }
+
+  async function ensureFontLoaded(font) {
+    if (!document.fonts || !document.fonts.load) return;
+    try {
+      await document.fonts.load(font.load, currentLetteringText());
+    } catch (e) {
+      // Safari will still use the fallback if a remote font cannot load.
+    }
+  }
+
+  function renderFontFilters() {
+    fontFilterRow.innerHTML = '';
+    FONT_CATEGORIES.forEach(category => {
+      const btn = document.createElement('button');
+      btn.className = 'font-filter' + (state.selectedFontCategory === category ? ' active' : '');
+      btn.textContent = category;
+      btn.addEventListener('click', () => {
+        state.selectedFontCategory = category;
+        renderFontFilters();
+        renderFontPicker();
+      });
+      fontFilterRow.appendChild(btn);
+    });
+  }
+
+  function renderFontPicker() {
+    fontPicker.innerHTML = '';
+    const preview = currentLetteringText();
+    const fonts = NAIL_FONTS.filter(f => state.selectedFontCategory === 'All' || f.category === state.selectedFontCategory);
+
+    fonts.forEach(font => {
+      const btn = document.createElement('button');
+      btn.className = 'font-option' + (state.selectedFont === font.name ? ' active' : '');
+      btn.innerHTML = '<span class="font-sample"></span><span class="font-name"></span>';
+      const sample = btn.querySelector('.font-sample');
+      const name = btn.querySelector('.font-name');
+      sample.textContent = preview;
+      sample.style.fontFamily = font.css;
+      if (font.name === 'UnifrakturCook') sample.style.fontWeight = '700';
+      name.textContent = font.name;
+      btn.addEventListener('click', async () => {
+        state.selectedFont = font.name;
+        fontLoadStatus.textContent = `Loading ${font.name}...`;
+        await ensureFontLoaded(font);
+        updateLetteringPreview();
+        renderFontPicker();
+        fontLoadStatus.textContent = `${font.name} selected.`;
+      });
+      fontPicker.appendChild(btn);
+    });
+  }
+
+  async function updateLetteringPreview() {
+    const font = selectedFontRecord();
+    const textValue = currentLetteringText();
+    letteringLiveText.textContent = textValue;
+    letteringLiveText.style.fontFamily = font.css;
+    letteringLiveText.style.fontWeight = font.name === 'UnifrakturCook' ? '700' : '400';
+    await ensureFontLoaded(font);
+  }
+
+  letteringText.addEventListener('input', () => {
+    updateLetteringPreview();
+    renderFontPicker();
+  });
+
+  letterThickness.addEventListener('input', () => {
+    letterThicknessValue.textContent = letterThickness.value;
+  });
+
+  function renderLetteringCanvas(textValue, font, thickness) {
+    const fontSize = 180;
+    const weight = font.name === 'UnifrakturCook' ? '700 ' : '';
+    const fontSpec = `${weight}${fontSize}px ${font.css}`;
+    const measureCanvas = document.createElement('canvas');
+    const mctx = measureCanvas.getContext('2d');
+    mctx.font = fontSpec;
+    const metrics = mctx.measureText(textValue);
+    const left = Math.ceil(metrics.actualBoundingBoxLeft || 0);
+    const right = Math.ceil(metrics.actualBoundingBoxRight || metrics.width);
+    const ascent = Math.ceil(metrics.actualBoundingBoxAscent || fontSize * .8);
+    const descent = Math.ceil(metrics.actualBoundingBoxDescent || fontSize * .25);
+    const stroke = Number(thickness) * 2;
+    const pad = Math.max(30, stroke + 22);
+    const width = Math.max(80, Math.ceil(left + right + pad * 2));
+    const height = Math.max(80, Math.ceil(ascent + descent + pad * 2));
+
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.min(2400, width);
+    canvas.height = Math.min(900, height);
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.font = fontSpec;
+    ctx.textBaseline = 'alphabetic';
+    ctx.textAlign = 'left';
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.fillStyle = '#000';
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = stroke;
+    const x = pad + left;
+    const y = pad + ascent;
+    if (stroke > 0) ctx.strokeText(textValue, x, y);
+    ctx.fillText(textValue, x, y);
+    return canvas;
+  }
+
+  addLetteringBtn.addEventListener('click', async () => {
+    const textValue = currentLetteringText();
+    if (!textValue) return;
+    const font = selectedFontRecord();
+    addLetteringBtn.disabled = true;
+    addLetteringBtn.textContent = 'Adding lettering...';
+    fontLoadStatus.textContent = `Loading ${font.name}...`;
+    await ensureFontLoaded(font);
+    const canvas = renderLetteringCanvas(textValue, font, letterThickness.value);
+    const img = new Image();
+    img.onload = () => {
+      finishLoadedImage(img, `${font.name} lettering loaded`);
+      addLetteringBtn.disabled = false;
+      addLetteringBtn.textContent = 'Add lettering to nail';
+      fontLoadStatus.textContent = `${font.name} lettering added. Use Edit to rotate, mirror, crop, or position it.`;
+      if (window.innerWidth <= 700) setMobilePanel('edit');
+    };
+    img.onerror = () => {
+      addLetteringBtn.disabled = false;
+      addLetteringBtn.textContent = 'Add lettering to nail';
+      fontLoadStatus.textContent = 'Could not create the lettering. Try another font.';
+    };
+    img.src = canvas.toDataURL('image/png');
+  });
+
+  renderFontFilters();
+  renderFontPicker();
+  updateLetteringPreview();
 
   window.addEventListener('resize',resizeCanvases);
   updateEditButtonStates();
