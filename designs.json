@@ -1735,6 +1735,123 @@
           ]
         }
       ]
+    },
+    {
+      "id": "characters",
+      "label": "Characters",
+      "subcategories": [
+        {
+          "id": "peanuts",
+          "label": "Peanuts",
+          "path": "images/characters/peanuts",
+          "designs": [
+            {
+              "name": "Snoopy & Woodstock on Doghouse 1",
+              "file": "snoopy-woodstock-doghouse-01.svg"
+            },
+            {
+              "name": "Snoopy & Woodstock on Doghouse 2",
+              "file": "snoopy-woodstock-doghouse-02.svg"
+            },
+            {
+              "name": "Snoopy & Woodstock Party Hats",
+              "file": "snoopy-woodstock-party-hats.svg"
+            },
+            {
+              "name": "Snoopy Holding Flowers 1",
+              "file": "snoopy-holding-flowers-01.svg"
+            },
+            {
+              "name": "Snoopy Holding Flowers 2",
+              "file": "snoopy-holding-flowers-02.svg"
+            },
+            {
+              "name": "Snoopy with Flowers on Doghouse",
+              "file": "snoopy-flowers-doghouse.svg"
+            },
+            {
+              "name": "Snoopy Holding Pink Flower 1",
+              "file": "snoopy-pink-flower-01.svg"
+            },
+            {
+              "name": "Snoopy Holding Pink Flower 2",
+              "file": "snoopy-pink-flower-02.svg"
+            },
+            {
+              "name": "Snoopy Holding Sign & Flower 1",
+              "file": "snoopy-sign-flower-01.svg"
+            },
+            {
+              "name": "Snoopy Holding Sign & Flower 2",
+              "file": "snoopy-sign-flower-02.svg"
+            },
+            {
+              "name": "Snoopy Hugging Woodstock",
+              "file": "snoopy-hugging-woodstock.svg"
+            },
+            {
+              "name": "Snoopy Hugging Bird 1",
+              "file": "snoopy-hugging-bird-01.svg"
+            },
+            {
+              "name": "Snoopy Hugging Bird 2",
+              "file": "snoopy-hugging-bird-02.svg"
+            },
+            {
+              "name": "Snoopy Lying on Doghouse 1",
+              "file": "snoopy-lying-doghouse-01.svg"
+            },
+            {
+              "name": "Snoopy Lying on Doghouse 2",
+              "file": "snoopy-lying-doghouse-02.svg"
+            },
+            {
+              "name": "Snoopy Skating with Headset",
+              "file": "snoopy-skating-headset.svg"
+            },
+            {
+              "name": "Snoopy Gift Hat 1",
+              "file": "snoopy-gift-hat-01.svg"
+            },
+            {
+              "name": "Snoopy Gift Hat 2",
+              "file": "snoopy-gift-hat-02.svg"
+            },
+            {
+              "name": "Snoopy Party Hat 1",
+              "file": "snoopy-party-hat-01.svg"
+            },
+            {
+              "name": "Snoopy Party Hat 2",
+              "file": "snoopy-party-hat-02.svg"
+            },
+            {
+              "name": "Peanuts Group 1",
+              "file": "peanuts-group-01.svg"
+            },
+            {
+              "name": "Peanuts Group 2",
+              "file": "peanuts-group-02.svg"
+            },
+            {
+              "name": "Sally Brown 1",
+              "file": "sally-brown-01.svg"
+            },
+            {
+              "name": "Sally Brown 2",
+              "file": "sally-brown-02.svg"
+            },
+            {
+              "name": "Pink Heart Outline 1",
+              "file": "pink-heart-outline-01.svg"
+            },
+            {
+              "name": "Pink Heart Outline 2",
+              "file": "pink-heart-outline-02.svg"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
